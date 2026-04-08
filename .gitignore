@@ -1,0 +1,28 @@
+﻿[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Bb]uilds/
+[Ll]ogs/
+MemoryCaptures/
+UserSettings/
+.vs/
+
+# Auto-generated project files
+*.csproj
+*.sln
+*.unityproj
+*.booproj
+*.svd
+*.pdb
+*.mdb
+*.opendb
+*.VC.db
+
+# OS / editors
+.DS_Store
+Thumbs.db
+*.tmp
+
+# Crash / diagnostics
+sysinfo.txt
