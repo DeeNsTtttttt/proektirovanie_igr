@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 #if ENABLE_INPUT_SYSTEM
 using UnityEngine.InputSystem;
 #endif
@@ -7,6 +7,7 @@ using UnityEngine.InputSystem;
 public class PlayerPhysicsController : MonoBehaviour
 {
     [SerializeField] private float moveSpeed = 6f;
+    [SerializeField] private float runSpeed = 8f;
     [SerializeField] private float jumpImpulse = 7f;
     [SerializeField] private float rotationSpeed = 12f;
 
@@ -14,6 +15,7 @@ public class PlayerPhysicsController : MonoBehaviour
     private Collider col;
     private Vector3 moveInput;
     private bool jumpRequested;
+    private bool runHeld;
 
     private void Awake()
     {
@@ -25,6 +27,7 @@ public class PlayerPhysicsController : MonoBehaviour
     private void Update()
     {
         moveInput = ReadMoveInput();
+        runHeld = ReadRunHeld();
         jumpRequested |= ReadJumpPressed();
     }
 
@@ -37,9 +40,9 @@ public class PlayerPhysicsController : MonoBehaviour
             jumpRequested = false;
             if (IsGrounded())
             {
-                Vector3 v = rb.velocity;
+                Vector3 v = rb.linearVelocity;
                 v.y = 0f;
-                rb.velocity = v;
+                rb.linearVelocity = v;
                 rb.AddForce(Vector3.up * jumpImpulse, ForceMode.Impulse);
             }
         }
@@ -47,7 +50,8 @@ public class PlayerPhysicsController : MonoBehaviour
 
     private void Move()
     {
-        Vector3 delta = moveInput * moveSpeed * Time.fixedDeltaTime;
+        float currentSpeed = runHeld ? runSpeed : moveSpeed;
+        Vector3 delta = moveInput * currentSpeed * Time.fixedDeltaTime;
         rb.MovePosition(rb.position + delta);
 
         if (moveInput.sqrMagnitude > 0.0001f)
@@ -66,10 +70,11 @@ public class PlayerPhysicsController : MonoBehaviour
     private Vector3 ReadMoveInput()
     {
 #if ENABLE_INPUT_SYSTEM
-        var kb = Keyboard.current;
+        Keyboard kb = Keyboard.current;
         if (kb == null) return Vector3.zero;
 
-        float x = 0f, z = 0f;
+        float x = 0f;
+        float z = 0f;
         if (kb.aKey.isPressed || kb.leftArrowKey.isPressed) x -= 1f;
         if (kb.dKey.isPressed || kb.rightArrowKey.isPressed) x += 1f;
         if (kb.sKey.isPressed || kb.downArrowKey.isPressed) z -= 1f;
@@ -84,10 +89,20 @@ public class PlayerPhysicsController : MonoBehaviour
     private bool ReadJumpPressed()
     {
 #if ENABLE_INPUT_SYSTEM
-        var kb = Keyboard.current;
+        Keyboard kb = Keyboard.current;
         return kb != null && kb.spaceKey.wasPressedThisFrame;
 #else
         return Input.GetButtonDown("Jump");
+#endif
+    }
+
+    private bool ReadRunHeld()
+    {
+#if ENABLE_INPUT_SYSTEM
+        Keyboard kb = Keyboard.current;
+        return kb != null && (kb.leftShiftKey.isPressed || kb.rightShiftKey.isPressed);
+#else
+        return Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
 #endif
     }
 }
