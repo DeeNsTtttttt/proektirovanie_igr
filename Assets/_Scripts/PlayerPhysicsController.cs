@@ -17,6 +17,9 @@ public class PlayerPhysicsController : MonoBehaviour
     private bool jumpRequested;
     private bool runHeld;
 
+    private Vector3 aimOverrideDirection;
+    private float aimOverrideTimer;
+
     private void Awake()
     {
         rb = GetComponent<Rigidbody>();
@@ -29,6 +32,23 @@ public class PlayerPhysicsController : MonoBehaviour
         moveInput = ReadMoveInput();
         runHeld = ReadRunHeld();
         jumpRequested |= ReadJumpPressed();
+
+        if (aimOverrideTimer > 0f)
+        {
+            aimOverrideTimer -= Time.deltaTime;
+        }
+    }
+
+    public void SetAimDirection(Vector3 worldDirection, float holdTimeSeconds = 0.12f)
+    {
+        worldDirection.y = 0f;
+        if (worldDirection.sqrMagnitude < 0.0001f)
+        {
+            return;
+        }
+
+        aimOverrideDirection = worldDirection.normalized;
+        aimOverrideTimer = Mathf.Max(0f, holdTimeSeconds);
     }
 
     private void FixedUpdate()
@@ -54,9 +74,20 @@ public class PlayerPhysicsController : MonoBehaviour
         Vector3 delta = moveInput * currentSpeed * Time.fixedDeltaTime;
         rb.MovePosition(rb.position + delta);
 
-        if (moveInput.sqrMagnitude > 0.0001f)
+        Vector3 rotationDirection = Vector3.zero;
+
+        if (aimOverrideTimer > 0f && aimOverrideDirection.sqrMagnitude > 0.0001f)
         {
-            Quaternion target = Quaternion.LookRotation(moveInput, Vector3.up);
+            rotationDirection = aimOverrideDirection;
+        }
+        else if (moveInput.sqrMagnitude > 0.0001f)
+        {
+            rotationDirection = moveInput;
+        }
+
+        if (rotationDirection.sqrMagnitude > 0.0001f)
+        {
+            Quaternion target = Quaternion.LookRotation(rotationDirection, Vector3.up);
             rb.MoveRotation(Quaternion.Slerp(rb.rotation, target, rotationSpeed * Time.fixedDeltaTime));
         }
     }

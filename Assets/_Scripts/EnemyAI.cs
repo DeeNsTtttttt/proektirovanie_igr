@@ -29,6 +29,7 @@ public class EnemyAI : MonoBehaviour
     [SerializeField, Min(0.05f)] private float attackCooldown = 1f;
 
     private NavMeshAgent agent;
+    private Rigidbody rb;
     private State currentState = State.Patrol;
     private int currentWaypointIndex;
     private float lastAttackTime = -Mathf.Infinity;
@@ -36,7 +37,22 @@ public class EnemyAI : MonoBehaviour
     private void Awake()
     {
         agent = GetComponent<NavMeshAgent>();
+        rb = GetComponent<Rigidbody>();
+        ConfigurePhysicsForNavAgent();
         TryFindPlayerByTag();
+    }
+
+    private void ConfigurePhysicsForNavAgent()
+    {
+        if (rb == null)
+        {
+            return;
+        }
+
+        // NavMeshAgent should drive movement, so physics impulses must not push the enemy away.
+        rb.useGravity = false;
+        rb.isKinematic = true;
+        rb.constraints = RigidbodyConstraints.FreezeRotation;
     }
 
     private void Start()
