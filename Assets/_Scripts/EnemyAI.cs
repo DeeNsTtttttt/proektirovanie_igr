@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -60,6 +61,33 @@ public class EnemyAI : MonoBehaviour
         if (waypoints != null && waypoints.Length > 0)
         {
             currentWaypointIndex = 0;
+            agent.SetDestination(waypoints[currentWaypointIndex].position);
+        }
+    }
+
+    public void SetWaypoints(Transform[] newWaypoints)
+    {
+        if (newWaypoints == null || newWaypoints.Length == 0)
+        {
+            waypoints = System.Array.Empty<Transform>();
+            currentWaypointIndex = 0;
+            return;
+        }
+
+        List<Transform> filtered = new List<Transform>(newWaypoints.Length);
+        for (int i = 0; i < newWaypoints.Length; i++)
+        {
+            if (newWaypoints[i] != null)
+            {
+                filtered.Add(newWaypoints[i]);
+            }
+        }
+
+        waypoints = filtered.ToArray();
+        currentWaypointIndex = 0;
+
+        if (agent != null && waypoints.Length > 0 && agent.isOnNavMesh)
+        {
             agent.SetDestination(waypoints[currentWaypointIndex].position);
         }
     }

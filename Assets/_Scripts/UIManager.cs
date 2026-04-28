@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using TMPro;
 
@@ -11,6 +12,9 @@ public class UIManager : MonoBehaviour
     [SerializeField] private Transform player;
 
     private int score;
+
+    public int Score => score;
+    public event Action<int> ScoreChanged;
 
     private void Start()
     {
@@ -30,8 +34,14 @@ public class UIManager : MonoBehaviour
 
     public void AddScore(int amount)
     {
+        if (amount <= 0)
+        {
+            return;
+        }
+
         score += amount;
         RefreshScore();
+        ScoreChanged?.Invoke(score);
     }
 
     private void RefreshScore()
