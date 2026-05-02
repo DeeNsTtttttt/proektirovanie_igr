@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 [RequireComponent(typeof(Collider))]
 public class Collectible : MonoBehaviour
@@ -21,15 +21,24 @@ public class Collectible : MonoBehaviour
             return;
         }
 
-        UIManager ui = FindFirstObjectByType<UIManager>();
-        if (ui != null)
+        ResourceManager resourceManager = ResourceManager.Instance;
+        if (resourceManager != null)
         {
-            ui.AddScore(scoreValue);
+            resourceManager.AddCoins(scoreValue);
+        }
+        else
+        {
+            UIManager ui = FindFirstObjectByType<UIManager>();
+            if (ui != null)
+            {
+                ui.AddScore(scoreValue);
+            }
         }
 
-        if (pickUpSound != null)
+        AudioClip activeClip = pickUpSound != null ? pickUpSound : SyntheticSfx.GetPickupClip();
+        if (activeClip != null)
         {
-            AudioSource.PlayClipAtPoint(pickUpSound, transform.position, pickUpVolume);
+            AudioSource.PlayClipAtPoint(activeClip, transform.position, pickUpVolume);
         }
 
         if (pickUpVfxPrefab != null)
@@ -41,3 +50,4 @@ public class Collectible : MonoBehaviour
         Destroy(gameObject);
     }
 }
+

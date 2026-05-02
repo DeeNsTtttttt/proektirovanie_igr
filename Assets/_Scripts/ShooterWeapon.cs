@@ -1,5 +1,6 @@
-﻿using System.Collections;
+using System.Collections;
 using UnityEngine;
+using UnityEngine.EventSystems;
 #if ENABLE_INPUT_SYSTEM
 using UnityEngine.InputSystem;
 #endif
@@ -66,6 +67,7 @@ public class ShooterWeapon : MonoBehaviour
 
     private Transform ownerRoot;
     private PlayerPhysicsController ownerController;
+    private PlayerStats playerStats;
 
     public int CurrentAmmo => currentAmmo;
     public int ReserveAmmo => reserveAmmo;
@@ -97,6 +99,7 @@ public class ShooterWeapon : MonoBehaviour
 
         ownerRoot = transform.root != null ? transform.root : transform;
         ownerController = ownerRoot.GetComponent<PlayerPhysicsController>();
+        playerStats = ownerRoot.GetComponent<PlayerStats>();
     }
 
     private void Update()
@@ -157,10 +160,10 @@ public class ShooterWeapon : MonoBehaviour
 
     private int CalculateDamage(int ammoBeforeShot)
     {
-        int damage = baseDamage;
+        int damage = baseDamage + (playerStats != null ? playerStats.DamageBonus : 0);
         if (ammoBeforeShot <= boostedLastBulletsCount)
         {
-            damage = Mathf.RoundToInt(baseDamage * boostedDamageMultiplier);
+            damage = Mathf.RoundToInt(damage * boostedDamageMultiplier);
         }
 
         return damage;
@@ -419,6 +422,11 @@ public class ShooterWeapon : MonoBehaviour
 
     private bool ReadShootHeld()
     {
+        if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())
+        {
+            return false;
+        }
+
 #if ENABLE_INPUT_SYSTEM
         Mouse mouse = Mouse.current;
         return mouse != null && mouse.leftButton.isPressed;
@@ -437,3 +445,5 @@ public class ShooterWeapon : MonoBehaviour
 #endif
     }
 }
+
+

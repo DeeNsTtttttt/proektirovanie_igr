@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 #if ENABLE_INPUT_SYSTEM
 using UnityEngine.InputSystem;
 #endif
@@ -10,6 +10,7 @@ public class PlayerPhysicsController : MonoBehaviour
     [SerializeField] private float runSpeed = 8f;
     [SerializeField] private float jumpImpulse = 7f;
     [SerializeField] private float rotationSpeed = 12f;
+    [SerializeField] private PlayerStats playerStats;
 
     private Rigidbody rb;
     private Collider col;
@@ -24,6 +25,10 @@ public class PlayerPhysicsController : MonoBehaviour
     {
         rb = GetComponent<Rigidbody>();
         col = GetComponent<Collider>();
+        if (playerStats == null)
+        {
+            playerStats = GetComponent<PlayerStats>();
+        }
         rb.freezeRotation = true;
     }
 
@@ -71,6 +76,10 @@ public class PlayerPhysicsController : MonoBehaviour
     private void Move()
     {
         float currentSpeed = runHeld ? runSpeed : moveSpeed;
+        if (playerStats != null)
+        {
+            currentSpeed += playerStats.SpeedBonus;
+        }
         Vector3 delta = moveInput * currentSpeed * Time.fixedDeltaTime;
         rb.MovePosition(rb.position + delta);
 
@@ -137,3 +146,4 @@ public class PlayerPhysicsController : MonoBehaviour
 #endif
     }
 }
+

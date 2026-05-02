@@ -44,6 +44,24 @@ public class UIManager : MonoBehaviour
         ScoreChanged?.Invoke(score);
     }
 
+    public bool TrySpendScore(int amount)
+    {
+        if (amount <= 0)
+        {
+            return true;
+        }
+
+        if (score < amount)
+        {
+            return false;
+        }
+
+        score -= amount;
+        RefreshScore();
+        ScoreChanged?.Invoke(score);
+        return true;
+    }
+
     private void RefreshScore()
     {
         if (scoreText != null)
@@ -52,3 +70,4 @@ public class UIManager : MonoBehaviour
         }
     }
 }
+

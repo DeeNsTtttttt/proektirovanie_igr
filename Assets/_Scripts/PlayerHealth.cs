@@ -17,6 +17,9 @@ public class PlayerHealth : MonoBehaviour
     private float invincibilityTimer;
     private Vector3 startPosition;
 
+    public int MaxHealth => maxHealth;
+    public int CurrentHealth => currentHealth;
+
     private void Awake()
     {
         // Common setup mistake: PlayerHealth accidentally added to UI text object.
@@ -100,6 +103,26 @@ public class PlayerHealth : MonoBehaviour
         }
     }
 
+    public void IncreaseMaxHealth(int amount, bool healAddedHealth = true)
+    {
+        if (amount <= 0)
+        {
+            return;
+        }
+
+        maxHealth += amount;
+        if (healAddedHealth)
+        {
+            currentHealth = Mathf.Min(maxHealth, currentHealth + amount);
+        }
+        else
+        {
+            currentHealth = Mathf.Min(currentHealth, maxHealth);
+        }
+
+        UpdateHealthUI();
+    }
+
     private void Die()
     {
         if (isDead)
@@ -173,7 +196,7 @@ public class PlayerHealth : MonoBehaviour
 
         if (healthText != null)
         {
-            healthText.text = $"Health: {currentHealth}";
+            healthText.text = $"Health: {currentHealth}/{maxHealth}";
         }
     }
 
@@ -207,3 +230,4 @@ public class PlayerHealth : MonoBehaviour
         invincibilityTimer = invincibilityDuration;
     }
 }
+
