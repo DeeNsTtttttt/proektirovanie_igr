@@ -207,3 +207,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EnemyHealth
   maxHealth: 100
   deathVfxPrefab: {fileID: 0}
+  coinDropPrefab: {fileID: 8852788507146123181, guid: 6a9c655984c0d9141b9491f621b14311, type: 3}
+  coinDropCount: 1
