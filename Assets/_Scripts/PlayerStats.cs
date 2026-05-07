@@ -79,4 +79,11 @@ public class PlayerStats : MonoBehaviour
 
         StatsChanged?.Invoke();
     }
-}
+
+    public void RestoreBonuses(int savedDamageBonus, float savedSpeedBonus, int savedMaxHealthBonus)
+    {
+        damageBonus = Mathf.Max(0, savedDamageBonus);
+        speedBonus = Mathf.Max(0f, savedSpeedBonus);
+        maxHealthBonus = Mathf.Max(0, savedMaxHealthBonus);
+        StatsChanged?.Invoke();
+    }}

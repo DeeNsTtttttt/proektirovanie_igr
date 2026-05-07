@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+using System.Collections;
+using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody), typeof(Collider))]
 public class BulletProjectile : MonoBehaviour
@@ -8,6 +9,8 @@ public class BulletProjectile : MonoBehaviour
 
     private Rigidbody rb;
     private Collider ownCollider;
+    private BulletPool pool;
+    private Coroutine lifetimeRoutine;
     private int damage;
     private GameObject owner;
     private bool hasHit;
@@ -33,15 +36,42 @@ public class BulletProjectile : MonoBehaviour
         rb.interpolation = RigidbodyInterpolation.Interpolate;
     }
 
+    private void OnDisable()
+    {
+        if (lifetimeRoutine != null)
+        {
+            StopCoroutine(lifetimeRoutine);
+            lifetimeRoutine = null;
+        }
+
+        if (rb != null)
+        {
+            rb.linearVelocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
+        }
+    }
+
+    public void SetPool(BulletPool ownerPool)
+    {
+        pool = ownerPool;
+    }
+
     public void Launch(Vector3 direction, float speed, int shotDamage, float lifetime, GameObject shotOwner)
     {
         owner = shotOwner;
         damage = shotDamage > 0 ? shotDamage : fallbackDamage;
+        hasHit = false;
 
         IgnoreOwnerCollisions();
 
         rb.linearVelocity = direction.normalized * Mathf.Max(1f, speed);
-        Destroy(gameObject, Mathf.Max(0.1f, lifetime));
+
+        if (lifetimeRoutine != null)
+        {
+            StopCoroutine(lifetimeRoutine);
+        }
+
+        lifetimeRoutine = StartCoroutine(LifetimeRoutine(Mathf.Max(0.1f, lifetime)));
     }
 
     private void OnTriggerEnter(Collider other)
@@ -93,7 +123,37 @@ public class BulletProjectile : MonoBehaviour
             Destroy(vfx, 1.5f);
         }
 
-        Destroy(gameObject);
+        Despawn();
+    }
+
+    private IEnumerator LifetimeRoutine(float lifetime)
+    {
+        yield return new WaitForSeconds(lifetime);
+        Despawn();
+    }
+
+    private void Despawn()
+    {
+        if (lifetimeRoutine != null)
+        {
+            StopCoroutine(lifetimeRoutine);
+            lifetimeRoutine = null;
+        }
+
+        if (rb != null)
+        {
+            rb.linearVelocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
+        }
+
+        if (pool != null)
+        {
+            pool.ReturnBullet(this);
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
     }
 
     private void IgnoreOwnerCollisions()

@@ -62,8 +62,14 @@ public class UIManager : MonoBehaviour
         return true;
     }
 
-    private void RefreshScore()
+    public void SetScore(int value)
     {
+        score = Mathf.Max(0, value);
+        RefreshScore();
+        ScoreChanged?.Invoke(score);
+    }
+
+    private void RefreshScore()    {
         if (scoreText != null)
         {
             scoreText.text = $"Coins: {score}";

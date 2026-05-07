@@ -119,6 +119,20 @@ public class ResourceManager : MonoBehaviour
         RefreshUI();
     }
 
+    public void SetCoins(int amount)
+    {
+        int safeAmount = Mathf.Max(0, amount);
+        if (useUIManagerScore && uiManager != null)
+        {
+            uiManager.SetScore(safeAmount);
+        }
+        else
+        {
+            coins = safeAmount;
+            HandleScoreChanged(coins);
+        }
+    }
+
     private void HandleScoreChanged(int _)
     {
         RefreshUI();

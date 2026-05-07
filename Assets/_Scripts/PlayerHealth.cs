@@ -73,6 +73,7 @@ public class PlayerHealth : MonoBehaviour
         }
 
         currentHealth -= damage;
+        CameraShake.Shake();
 
         if (currentHealth <= 0)
         {
@@ -123,6 +124,13 @@ public class PlayerHealth : MonoBehaviour
         UpdateHealthUI();
     }
 
+    public void RestoreHealthState(int savedCurrentHealth, int savedMaxHealth)
+    {
+        maxHealth = Mathf.Max(1, savedMaxHealth);
+        currentHealth = Mathf.Clamp(savedCurrentHealth, 1, maxHealth);
+        isDead = false;
+        UpdateHealthUI();
+    }
     private void Die()
     {
         if (isDead)

@@ -24,11 +24,18 @@ public class Lab4LevelFlow : MonoBehaviour
     [SerializeField] private ArenaConfig[] arenas;
     [SerializeField] private bool lockGatesOnStart = true;
 
+    [Header("Win")]
+    [SerializeField] private GameObject winPanel;
+    [SerializeField] private bool pauseOnFinalArenaClear = true;
+    [SerializeField] private bool showCursorOnWin = true;
+    [SerializeField] private bool requireCoinsForWin = false;
+
     private int currentArenaIndex = -1;
     private bool[] arenaStarted;
     private bool[] arenaCompleted;
     private bool[] wasInsideTrigger;
     private int[] arenaScoreBaseline;
+    private bool levelWon;
 
     private void Awake()
     {
@@ -60,6 +67,11 @@ public class Lab4LevelFlow : MonoBehaviour
         arenaCompleted = new bool[count];
         wasInsideTrigger = new bool[count];
         arenaScoreBaseline = new int[count];
+
+        if (winPanel != null)
+        {
+            winPanel.SetActive(false);
+        }
 
         if (lockGatesOnStart)
         {
@@ -153,6 +165,11 @@ public class Lab4LevelFlow : MonoBehaviour
 
         bool wavesCleared = AreArenaSpawnersFinished(index);
         bool coinsCollected = GetArenaCoins(index) >= arenas[index].requiredCoins;
+
+        if (IsFinalArena(index) && wavesCleared && (!requireCoinsForWin || coinsCollected))
+        {
+            ShowWinPanel();
+        }
 
         if (!wavesCleared || !coinsCollected)
         {
@@ -291,6 +308,11 @@ public class Lab4LevelFlow : MonoBehaviour
 
     private void UpdateObjectiveText()
     {
+        if (levelWon)
+        {
+            return;
+        }
+
         if (objectiveText == null || arenas == null || arenas.Length == 0)
         {
             return;
@@ -331,6 +353,42 @@ public class Lab4LevelFlow : MonoBehaviour
         string status = arenaCompleted[currentArenaIndex] ? "done" : "in progress";
         objectiveText.text =
             $"Arena {currentArenaIndex + 1}: {arena.objectiveText}\nCoins {clampedCoins}/{target}, {wavesText}, {status}";
+    }
+
+    private void ShowWinPanel()
+    {
+        if (levelWon)
+        {
+            return;
+        }
+
+        levelWon = true;
+
+        if (objectiveText != null)
+        {
+            objectiveText.text = "Level completed";
+        }
+
+        if (winPanel != null)
+        {
+            winPanel.SetActive(true);
+        }
+
+        if (pauseOnFinalArenaClear)
+        {
+            Time.timeScale = 0f;
+        }
+
+        if (showCursorOnWin)
+        {
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
+        }
+    }
+
+    private bool IsFinalArena(int index)
+    {
+        return arenas != null && arenas.Length > 0 && index == arenas.Length - 1;
     }
 
     private void SetGateOpen(int arenaIndex, bool open)

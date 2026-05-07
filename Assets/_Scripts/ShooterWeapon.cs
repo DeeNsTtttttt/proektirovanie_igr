@@ -28,6 +28,7 @@ public class ShooterWeapon : MonoBehaviour
     [Header("Projectile")]
     [SerializeField] private bool useProjectileBullets = true;
     [SerializeField] private BulletProjectile bulletPrefab;
+    [SerializeField] private BulletPool bulletPool;
     [SerializeField, Min(1f)] private float bulletSpeed = 28f;
     [SerializeField, Min(0.1f)] private float bulletLifetime = 2.2f;
     [SerializeField, Min(0f)] private float spreadAngle = 0f;
@@ -104,6 +105,11 @@ public class ShooterWeapon : MonoBehaviour
 
     private void Update()
     {
+        if (Time.timeScale <= 0f)
+        {
+            return;
+        }
+
         UpdateRecoilRecovery();
 
         if (isReloading)
@@ -308,7 +314,16 @@ public class ShooterWeapon : MonoBehaviour
 
     private void SpawnProjectile(Vector3 origin, Vector3 direction, int damage)
     {
-        BulletProjectile bullet = Instantiate(bulletPrefab, origin, Quaternion.LookRotation(direction, Vector3.up));
+        Quaternion rotation = Quaternion.LookRotation(direction, Vector3.up);
+        BulletProjectile bullet = bulletPool != null
+            ? bulletPool.GetBullet(origin, rotation)
+            : null;
+
+        if (bullet == null)
+        {
+            bullet = Instantiate(bulletPrefab, origin, rotation);
+        }
+
         GameObject ownerRootObject = ownerRoot != null ? ownerRoot.gameObject : gameObject;
         bullet.Launch(direction, bulletSpeed, damage, bulletLifetime, ownerRootObject);
     }
